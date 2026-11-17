@@ -11,14 +11,14 @@
 ## Kernmechaniken
 Regeln (deine Angaben, ergänzt durch Recherche):
 - 11 Frauen, 10 Männer. Jede Frau hat genau ein Perfect Match. Genau ein Mann hat zwei Perfect Matches, alle anderen Männer eines. Damit gibt es 10 × C(11,2) × 9! = 199.584.000 mögliche Lösungen am Anfang.
-- **Truth Booth:** Ein Paar wird geprüft, Antwort nur Match oder kein Match.
-- **Matching Ceremony:** Alle bilden Paare, Ergebnis ist nur die Anzahl der Treffer, nicht welche.
-- Ein Preisgeld-Rechner ist nicht Teil der App.
-- Annahme, bitte bestätigen: In einer Ceremony wird jede Frau genau einem Mann zugeordnet, ein Mann darf dabei zwei Frauen haben. Das Ergebnis ist die Trefferzahl 0 bis 11.
+- **Matchbox** (das Gegenstück zur Truth Booth): Ein Paar, das nach seinem Date von der Gruppe gewählt wird, wird geprüft. Antwort nur Match oder kein Match.
+- **Matching Night** (am Ende jeder Doppelfolge): Es werden genau 10 Paare gebildet. Jeder Mann bekommt genau eine Frau, eine Frau bleibt ohne Partner. Das Ergebnis ist die Zahl der Lichter (0 bis 10), nicht welche Paare leuchten.
+- Es gibt 10 Matching Nights. Nur wenn in der 10. Matching Night alle zehn Lichter angehen, gewinnt die Gruppe 200.000 €. Ein Abend ohne Treffer kostet 50.000 €. Einen Preisgeld-Rechner baut die App nicht.
+- Quelle: RTL+-Seite zu Staffel 7 (Auszug von dir).
 
 Berechnung (Vorschlag):
 1. Eine Lösung ordnet jeder Frau genau einen Mann zu, sodass jeder Mann mindestens eine Frau hat.
-2. Truth-Booth-Ergebnisse und Ceremony-Trefferzahlen sind Bedingungen an diese Zuordnungen.
+2. Matchbox-Ergebnisse und Lichter-Anzahlen der Matching Nights sind Bedingungen an diese Zuordnungen. Eine Matching Night zählt, wie viele ihrer 10 Paare in der echten Lösung vorkommen. Der Mann mit dem Doppel-Match kann in einer Night nur eine seiner beiden Frauen bekommen.
 3. 199,6 Mio. Lösungen passen nicht als Liste in den Handyspeicher. Deshalb durchsucht die App den Lösungsraum per Backtracking mit frühem Abbruch: Sobald eine Teilzuordnung eine Bedingung sicher verletzt, wird der ganze Zweig verworfen. Dabei zählt sie, wie oft jedes Paar in gültigen Lösungen vorkommt.
 4. Daraus entsteht eine 11×10-Wahrscheinlichkeitsmatrix und die Zahl der verbleibenden Lösungen.
 5. Wird die Rechenzeit bei wenig Vorwissen zu lang, wechselt die App auf Zufallsstichproben und kennzeichnet die Werte als Schätzung.
@@ -26,13 +26,13 @@ Berechnung (Vorschlag):
 7. Widersprüchliche Eingaben (0 Lösungen) werden gemeldet.
 
 ## Steuerung
-Touch: Namen eintragen, Paare per Antippen wählen, Trefferzahl über ein Zahlenfeld eingeben.
+Touch: Namen eintragen, Paare per Antippen wählen, Lichter-Anzahl über ein Zahlenfeld eingeben.
 
 ## Bildschirme
 Vorschlag, dunkles Design mit Heatmap:
 1. Setup: Namen der 11 Frauen und 10 Männer.
-2. Ceremony eintragen: jede Frau einem Mann zuordnen, Trefferzahl eingeben.
-3. Truth Booth eintragen: Paar und Ergebnis.
+2. Matching Night eintragen: jedem Mann eine Frau zuordnen (die übrige Frau wird automatisch als "ohne Partner" angezeigt), Lichter-Anzahl 0 bis 10 eingeben.
+3. Matchbox eintragen: Paar und Ergebnis.
 4. Wahrscheinlichkeitsmatrix als Heatmap mit Prozentwerten.
 5. Empfehlung: nächster Tipp und nächstes Truth-Booth-Paar.
 6. Verlauf mit Rückgängig.
@@ -48,12 +48,12 @@ Vorschlag:
 - Nicht in 0.1: Entropie-Optimierung des Tipps, Stichproben-Fallback (falls die Suche schnell genug ist), andere Staffelvarianten.
 
 ## Annahmen
-- Es gibt keine weiteren Regeln als die oben genannten. Ich konnte die Regeln der deutschen Ausgabe nicht verifizieren, Wikipedia war nicht abrufbar.
+- Es gibt keine weiteren Regeln als die oben genannten. Die Regeln der deutschen Ausgabe stützen sich auf die RTL+-Seite, die du mir gezeigt hast, und auf deine Angaben.
+- Wer das Doppel-Match hat, ist anfangs unbekannt (deine Angabe). Die App rechnet das mit.
+- Die Lichter-Anzahl, die du eingibst, ist die Zahl, die in der Show angezeigt wird.
 - Die App wird manuell mit Daten aus der Sendung gefüttert.
 - Deutsche Oberfläche, nur zum Installieren per APK, kein Play Store.
 
 ## Offene Fragen
-1. Stimmt meine Annahme zur Ceremony (jede Frau genau einem Mann zugeordnet, ein Mann darf zwei bekommen, Ergebnis 0 bis 11 Treffer)? Falls anders: wie läuft sie in der deutschen Ausgabe ab?
-2. Ist bekannt, welcher Mann das Doppel-Match hat, oder wird das erst durch die Booths klar?
-3. Gibt es in der deutschen Ausgabe einen Truth Booth pro Folge, und wie viele Ceremonies gibt es?
-4. Freigabe: Soll ich auf Basis dieses Konzepts mit Version 0.1 beginnen?
+1. Müssen bereits per Matchbox bestätigte Paare in jeder Matching Night wieder enthalten sein, und zählen ihre Lichter in der angezeigten Zahl mit?
+2. Freigabe: Soll ich auf Basis dieses Konzepts mit Version 0.1 beginnen?
