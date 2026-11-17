@@ -1,0 +1,7 @@
+__pycache__/
+aytomatcher/.gradle/
+aytomatcher/.kotlin/
+aytomatcher/build/
+aytomatcher/*/build/
+aytomatcher/local.properties
+aytomatcher/AytO-Matcher.apk
