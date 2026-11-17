@@ -1,65 +1,59 @@
-# Konzept: AYTO-Rechner (Arbeitstitel, Vorschlag)
+# Konzept: AytO Matcher
 
 ## Idee
-Eine Android-App, die bei "Are You The One?" die möglichen Perfect-Match-Paarungen mathematisch eingrenzt. Der Nutzer trägt die Ergebnisse der Truth Booths und der Matching Ceremonies ein. Die App berechnet daraus alle noch möglichen Lösungen, die Wahrscheinlichkeit jedes Paares und den besten nächsten Tipp bzw. das beste nächste Truth-Booth-Paar (Vorschlag).
+"AytO Matcher" ist eine Android-App für die deutsche Ausgabe von "Are You The One?" mit 11 Frauen und 10 Männern. Der Nutzer trägt die Ergebnisse der Truth Booths und der Matching Ceremonies ein. Die App berechnet daraus alle noch möglichen Lösungen, die Wahrscheinlichkeit jedes Paares und einen Vorschlag für den nächsten Tipp (Vorschlag).
 
 ## Zielplattform und Technik
-- Vorschlag: Native Android-App mit Kotlin und Jetpack Compose. Gründe: Ergebnis ist direkt eine APK, die Berechnung läuft schnell und offline, keine Zusatz-Laufzeit nötig.
-- Vorschlag: Rechenkern als eigenes, UI-freies Kotlin-Modul. So lässt er sich am PC mit Unit-Tests prüfen.
-- Vorschlag: Build der APK über GitHub Actions (Repo `dremsky84/Project1`), weil diese Umgebung kein Android-SDK hat (geprüft: `sdkmanager`, `adb` fehlen; Java und Gradle sind vorhanden).
+- Vorschlag: Native Android-App mit Kotlin und Jetpack Compose. Grund: Ergebnis ist direkt eine APK, die Berechnung läuft offline und schnell.
+- Vorschlag: Der Rechenkern ist ein eigenes Kotlin-Modul ohne UI, damit ich ihn hier mit Unit-Tests prüfen kann.
+- Vorschlag: Die APK wird über GitHub Actions gebaut, weil du am Handy arbeitest und hier kein Android-SDK vorhanden ist (geprüft: `sdkmanager` und `adb` fehlen).
 
 ## Kernmechaniken
-Regeln der Show (Stand der Recherche, siehe Quellen unten):
-- 10 Frauen und 10 Männer; Produktion legt vorab geheim eine perfekte Zuordnung fest. Finden alle ihre Matches innerhalb von 10 Matching Ceremonies, wird das Preisgeld (1 Mio. $) geteilt.
-- **Truth Booth:** Ein gewähltes Paar wird geprüft. Antwort nur "Perfect Match" oder "kein Match". Ein bestätigtes Paar steht fest, ein verneintes Paar scheidet aus.
-- **Matching Ceremony:** Alle bilden eine komplette Paarung. Ergebnis ist nur die Anzahl richtiger Paare ("Lichter"), nicht welche.
-- **Blackout:** 0 Lichter (ohne bereits bestätigte Matches) kostet Preisgeld: $250.000 in Staffeln 3 und 4, 50 % in Staffel 5. Für spätere Staffeln nicht verifiziert.
-- Staffelvarianten: Manche Staffeln haben 11 Matches (eine Person hat zwei Matches). Staffel 8 war ohne Geschlechtergrenzen (beliebige Paare unter 20 Personen).
+Regeln (deine Angaben, ergänzt durch Recherche):
+- 11 Frauen, 10 Männer. Jede Frau hat genau ein Perfect Match. Genau ein Mann hat zwei Perfect Matches, alle anderen Männer eines. Damit gibt es 10 × C(11,2) × 9! = 199.584.000 mögliche Lösungen am Anfang.
+- **Truth Booth:** Ein Paar wird geprüft, Antwort nur Match oder kein Match.
+- **Matching Ceremony:** Alle bilden Paare, Ergebnis ist nur die Anzahl der Treffer, nicht welche.
+- Ein Preisgeld-Rechner ist nicht Teil der App.
+- Annahme, bitte bestätigen: In einer Ceremony wird jede Frau genau einem Mann zugeordnet, ein Mann darf dabei zwei Frauen haben. Das Ergebnis ist die Trefferzahl 0 bis 11.
 
 Berechnung (Vorschlag):
-1. Alle 10! = 3.628.800 Zuordnungen sind anfangs möglich.
-2. Jede Truth-Booth-Info und jede Ceremony (Treffer-Anzahl) filtert diese Menge. Die Prüfung ist pro Zuordnung billig; 3,6 Mio. passen als kompakte Arrays in den Speicher eines Handys.
-3. Aus den übrigen Lösungen entsteht eine 10x10-Wahrscheinlichkeitsmatrix (Anteil der Lösungen, in denen Paar X–Y vorkommt).
-4. Empfehlung nächster Ceremony-Tipp: eine noch mögliche Lösung, die die erwartete Restmenge minimiert bzw. die Entropie maximiert (wie bei Mastermind).
-5. Empfehlung Truth Booth: Paar mit Wahrscheinlichkeit nahe 50 % bzw. maximalem Informationsgewinn.
-6. Anzeige "Anzahl verbleibender Lösungen" und Hinweis, wenn Eingaben widersprüchlich sind (0 Lösungen).
+1. Eine Lösung ordnet jeder Frau genau einen Mann zu, sodass jeder Mann mindestens eine Frau hat.
+2. Truth-Booth-Ergebnisse und Ceremony-Trefferzahlen sind Bedingungen an diese Zuordnungen.
+3. 199,6 Mio. Lösungen passen nicht als Liste in den Handyspeicher. Deshalb durchsucht die App den Lösungsraum per Backtracking mit frühem Abbruch: Sobald eine Teilzuordnung eine Bedingung sicher verletzt, wird der ganze Zweig verworfen. Dabei zählt sie, wie oft jedes Paar in gültigen Lösungen vorkommt.
+4. Daraus entsteht eine 11×10-Wahrscheinlichkeitsmatrix und die Zahl der verbleibenden Lösungen.
+5. Wird die Rechenzeit bei wenig Vorwissen zu lang, wechselt die App auf Zufallsstichproben und kennzeichnet die Werte als Schätzung.
+6. Tipp-Vorschlag in v0.1: die gültige Zuordnung mit den höchsten Wahrscheinlichkeiten. Truth-Booth-Vorschlag: Paar mit Wahrscheinlichkeit nahe 50 %.
+7. Widersprüchliche Eingaben (0 Lösungen) werden gemeldet.
 
 ## Steuerung
-Touch: Namen der Kandidaten eintragen, Paare per Antippen auswählen, Ergebnisse per Zahlenfeld eingeben (Vorschlag).
+Touch: Namen eintragen, Paare per Antippen wählen, Trefferzahl über ein Zahlenfeld eingeben.
 
 ## Bildschirme
-Vorschlag:
-1. Start/Setup: Namen der Frauen und Männer eintragen, Variante wählen.
-2. Ceremony eintragen: komplette Paarung wählen und Lichter-Anzahl eingeben.
+Vorschlag, dunkles Design mit Heatmap:
+1. Setup: Namen der 11 Frauen und 10 Männer.
+2. Ceremony eintragen: jede Frau einem Mann zuordnen, Trefferzahl eingeben.
 3. Truth Booth eintragen: Paar und Ergebnis.
-4. Wahrscheinlichkeitsmatrix: Heatmap 10x10 mit Prozentwerten.
-5. Empfehlung: bester nächster Tipp und bestes Truth-Booth-Paar.
-6. Verlauf: Liste aller Eingaben mit Rückgängig.
+4. Wahrscheinlichkeitsmatrix als Heatmap mit Prozentwerten.
+5. Empfehlung: nächster Tipp und nächstes Truth-Booth-Paar.
+6. Verlauf mit Rückgängig.
 
 ## Build und Auslieferung
-- Code und Rechenkern-Tests werden hier erstellt und getestet (Java/Gradle vorhanden).
-- Die APK wird per GitHub Actions gebaut und als Artefakt bereitgestellt (Vorschlag), da lokal kein Android-SDK existiert. Ob du die APK am Handy oder PC herunterlädst, ist eine offene Frage.
-- Einen lokalen APK-Build mit eigenem SDK nur, falls du am PC arbeitest und das SDK dort hast.
+- Du arbeitest am Handy. Ich schreibe Code und Rechenkern-Tests hier und prüfe den Rechenkern mit den Tests.
+- Die APK baut GitHub Actions im Repo `dremsky84/Project1`. Vorschlag: Das Ergebnis wird als GitHub Release mit APK veröffentlicht, damit du sie direkt am Handy herunterladen und installieren kannst. Die APK wäre eine Debug-APK, du musst "Installation aus unbekannten Quellen" erlauben.
+- Ich kann die APK hier nicht auf einem Gerät testen. Ob sie baut und läuft, sehen wir erst im Actions-Lauf und auf deinem Handy.
 
 ## Umfang Version 0.1
 Vorschlag:
-- Variante 10x10 ohne Zusatzperson.
-- Eingabe von Truth Booths und Ceremonies, Filterung aller Lösungen, Wahrscheinlichkeitsmatrix, einfacher Tipp-Vorschlag (höchste Wahrscheinlichkeiten).
-- Speicherung des Verlaufs lokal auf dem Gerät.
-- Nicht in 0.1: 11er-Variante, Staffel 8 (ohne Geschlechtergrenzen, 654 Mio. Paarungen, braucht Sampling statt Aufzählung), Entropie-Optimierung, Preisgeld-Rechner.
+- Setup, Eingabe von Truth Booths und Ceremonies, Backtracking-Suche, Wahrscheinlichkeitsmatrix, einfacher Tipp-Vorschlag, lokaler Verlauf.
+- Nicht in 0.1: Entropie-Optimierung des Tipps, Stichproben-Fallback (falls die Suche schnell genug ist), andere Staffelvarianten.
 
 ## Annahmen
-- Du willst die klassische Variante (zwei Gruppen à 10).
-- Die App wird manuell mit Daten aus der Sendung gefüttert, keine Anbindung an Streamingdienste.
-- Deutsche Oberfläche.
-- Keine Veröffentlichung im Play Store, nur eine APK zum Installieren.
+- Es gibt keine weiteren Regeln als die oben genannten. Ich konnte die Regeln der deutschen Ausgabe nicht verifizieren, Wikipedia war nicht abrufbar.
+- Die App wird manuell mit Daten aus der Sendung gefüttert.
+- Deutsche Oberfläche, nur zum Installieren per APK, kein Play Store.
 
 ## Offene Fragen
-1. Arbeitest du gerade am PC oder am Handy? (Bestimmt, wie die APK gebaut und geliefert wird.)
-2. Welche Staffel/Version schaust du (US, deutsche Ausgabe, mit 11 Matches, Staffel 8)?
-3. Soll die App nur rechnen oder auch den Preisgeld-Verlust bei Blackouts anzeigen?
-4. Name der App und gewünschter Look (Vorschlag: dunkles Design mit Heatmap)?
-5. Soll v0.1 zuerst nur die Kernrechnung enthalten (siehe oben)?
-
-## Quellen der Recherche
-Regeldetails stammen aus Websuchen. Wikipedia war aus dieser Umgebung nicht abrufbar. Ein Truth-Booth-Limit pro Folge und die Regeln der Staffeln 6–9 sowie der deutschen Version sind nicht verifiziert.
+1. Stimmt meine Annahme zur Ceremony (jede Frau genau einem Mann zugeordnet, ein Mann darf zwei bekommen, Ergebnis 0 bis 11 Treffer)? Falls anders: wie läuft sie in der deutschen Ausgabe ab?
+2. Ist bekannt, welcher Mann das Doppel-Match hat, oder wird das erst durch die Booths klar?
+3. Gibt es in der deutschen Ausgabe einen Truth Booth pro Folge, und wie viele Ceremonies gibt es?
+4. Freigabe: Soll ich auf Basis dieses Konzepts mit Version 0.1 beginnen?
