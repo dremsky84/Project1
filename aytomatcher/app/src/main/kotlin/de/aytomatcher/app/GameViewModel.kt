@@ -62,6 +62,13 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
         persist()
     }
 
+    /** Setzt alle Namen auf die Standardnamen zurück. Die Ereignisse bleiben erhalten. */
+    fun resetNames() {
+        women = List(NUM_WOMEN) { "Frau ${it + 1}" }
+        men = List(NUM_MEN) { "Mann ${it + 1}" }
+        persist()
+    }
+
     fun editNames() {
         setupDone = false
     }

@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,6 +36,15 @@ fun SetupScreen(vm: GameViewModel) {
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.padding(top = 8.dp),
                 )
+                OutlinedButton(
+                    onClick = {
+                        for (i in women.indices) women[i] = ""
+                        for (i in men.indices) men[i] = ""
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                ) { Text("Alle Namen löschen") }
                 Text("Frauen", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
             }
         }

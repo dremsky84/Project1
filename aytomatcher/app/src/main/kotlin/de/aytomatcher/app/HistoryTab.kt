@@ -27,6 +27,7 @@ import de.aytomatcher.core.Night
 @Composable
 fun HistoryTab(vm: GameViewModel) {
     var confirmReset by remember { mutableStateOf(false) }
+    var confirmNames by remember { mutableStateOf(false) }
     Column(
         Modifier
             .fillMaxSize()
@@ -70,9 +71,26 @@ fun HistoryTab(vm: GameViewModel) {
             }
         }
         Button(onClick = { vm.editNames() }, modifier = Modifier.fillMaxWidth()) { Text("Namen bearbeiten") }
+        OutlinedButton(onClick = { confirmNames = true }, modifier = Modifier.fillMaxWidth()) {
+            Text("Alle Namen zurücksetzen")
+        }
         OutlinedButton(onClick = { confirmReset = true }, modifier = Modifier.fillMaxWidth()) {
             Text("Alle Ereignisse löschen")
         }
+    }
+    if (confirmNames) {
+        AlertDialog(
+            onDismissRequest = { confirmNames = false },
+            title = { Text("Alle Namen zurücksetzen?") },
+            text = { Text("Alle Namen werden wieder zu \"Frau 1\", \"Mann 1\" usw. Die Ereignisse bleiben erhalten.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    vm.resetNames()
+                    confirmNames = false
+                }) { Text("Zurücksetzen") }
+            },
+            dismissButton = { TextButton(onClick = { confirmNames = false }) { Text("Abbrechen") } },
+        )
     }
     if (confirmReset) {
         AlertDialog(
